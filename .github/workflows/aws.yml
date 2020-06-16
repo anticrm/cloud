@@ -39,7 +39,11 @@ jobs:
       with:
         node-version: 14
         registry-url: 'https://registry.npmjs.org'
-    - uses: docker://mongo
+    
+    - name: Launch MongoDB
+      uses: wbari/start-mongoDB@v0.2
+      with:
+        mongoDBVersion: ["4.2", "4.4"]
 
     - name: Build & Test
       run: |
