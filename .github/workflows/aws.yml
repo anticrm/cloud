@@ -43,7 +43,7 @@ jobs:
     - name: Launch MongoDB
       uses: wbari/start-mongoDB@v0.2
       with:
-        mongoDBVersion: ["4.2", "4.4"]
+        mongoDBVersion: 4.2
 
     - name: Build & Test
       run: |
