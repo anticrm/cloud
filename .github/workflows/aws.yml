@@ -49,7 +49,7 @@ jobs:
       run: |
         yarn install
         yarn workspace @anticrm/server build
-        yarn workspace @anticrm/server test
+        yarn workspace @anticrm/server test --detectOpenHandles
 
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v1
