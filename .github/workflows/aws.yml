@@ -36,6 +36,12 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v2
 
+    - name: Build & Test
+      run: |
+        yarn install
+        yarn workspace @anticrm/server build
+        yarn workspace @anticrm/server test
+
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v1
       with:
