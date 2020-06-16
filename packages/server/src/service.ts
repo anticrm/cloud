@@ -18,7 +18,7 @@ import { MemDb, ClientService } from '@anticrm/platform-core-plugin'
 import { MongoClient, Db } from 'mongodb'
 
 export async function connect (uri: string, dbName: string): Promise<ClientService & { shutdown: () => Promise<void> }> {
-  console.log('connecting to ' + uri)
+  // console.log('connecting to ' + uri)
   console.log('use ' + dbName)
   const client = await MongoClient.connect(uri, { useUnifiedTopology: true })
   const db = client.db(dbName)
