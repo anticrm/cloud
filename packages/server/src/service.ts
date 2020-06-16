@@ -17,7 +17,6 @@ import { Ref, Class, Doc } from '@anticrm/platform-core'
 import { MemDb, ClientService } from '@anticrm/platform-core-plugin'
 import { MongoClient, Db } from 'mongodb'
 
-
 export async function connect (uri: string, dbName: string): Promise<ClientService & { shutdown: () => Promise<void> }> {
   console.log('connecting to ' + uri)
   console.log('use ' + dbName)
