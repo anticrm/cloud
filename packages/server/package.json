@@ -1,0 +1,30 @@
+{
+  "name": "@anticrm/server",
+  "version": "0.1.0",
+  "scripts": {
+    "build": "tsc",
+    "test": "jest",
+    "start": "node lib/index.js"
+  },
+  "author": "Anticrm Platform Contributors",
+  "license": "EPL-2.0",
+  "devDependencies": {
+    "@babel/preset-env": "^7.10.2",
+    "@babel/preset-typescript": "^7.10.1",
+    "@types/jest": "^26.0.0",
+    "@types/jwt-simple": "^0.5.33",
+    "@types/mongodb": "^3.5.20",
+    "@types/ws": "^7.2.5",
+    "babel-jest": "^26.0.1",
+    "jest": "^26.0.1",
+    "typescript": "^3.9.5"
+  },
+  "dependencies": {
+    "@anticrm/platform": "^0.1.0-dev.16",
+    "@anticrm/platform-core": "^0.1.0-dev.16",
+    "@anticrm/platform-core-plugin": "^0.1.0-dev.16",
+    "jwt-simple": "^0.5.6",
+    "mongodb": "^3.5.9",
+    "ws": "^7.3.0"
+  }
+}

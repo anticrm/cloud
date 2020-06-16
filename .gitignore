@@ -1,0 +1,8 @@
+.DS_Store
+node_modules
+generated_docs
+coverage
+lib
+dist
+yarn-error.log
+tsconfig.tsbuildinfo
