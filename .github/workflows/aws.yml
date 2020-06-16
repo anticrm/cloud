@@ -35,6 +35,10 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v2
+    - uses: actions/setup-node@v1
+      with:
+        node-version: 14
+        registry-url: 'https://registry.npmjs.org'
 
     - name: Build & Test
       run: |
