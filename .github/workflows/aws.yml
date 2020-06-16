@@ -50,6 +50,8 @@ jobs:
         yarn install
         yarn workspace @anticrm/server build
         yarn workspace @anticrm/server test
+      env:
+        MONGODB_URI: ${{secrets.mongodb_uri}}
 
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v1
