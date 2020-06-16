@@ -21,11 +21,12 @@ import { encode } from 'jwt-simple'
 
 describe('server', () => {
 
-  const shutdown = start(3333, 'mongodb://localhost:27017')
+  const mongodbUri = process.env.MONGODB_URL || 'mongodb://localhost:27017' // TODO: initialize local db
+  const shutdown = start(3333, mongodbUri)
 
   function connect () {
     const client: Client = {
-      tenant: 'company1'
+      tenant: 'latest-model'
     }
     const token = encode(client, 'secret')
     console.log(token)
