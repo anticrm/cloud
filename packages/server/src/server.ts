@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { makeResponse, getRequest } from '@anticrm/platform'
+import { makeResponse, getRequest } from './rpc'
 import { createServer, IncomingMessage } from 'http'
 import WebSocket, { Server } from 'ws'
 

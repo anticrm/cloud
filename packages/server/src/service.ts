@@ -13,9 +13,16 @@
 // limitations under the License.
 //
 
-import { Ref, Class, Doc } from '@anticrm/platform-core'
-import { MemDb, ClientService } from '@anticrm/platform-core-plugin'
 import { MongoClient, Db } from 'mongodb'
+
+import { Ref, Class, Doc } from './types'
+import { MemDb } from './memdb'
+
+export interface ClientService {
+  find (_class: Ref<Class>, query: {}): Promise<Doc[]>
+  load (domain: string): Promise<Doc[]>
+  ping (): Promise<void>
+}
 
 export async function connect (uri: string, dbName: string): Promise<ClientService & { shutdown: () => Promise<void> }> {
   // console.log('connecting to ' + uri)
@@ -32,7 +39,7 @@ export async function connect (uri: string, dbName: string): Promise<ClientServi
   memdb.loadModel(model)
 
   return {
-    find (_class: Ref<Class<Doc>>, query: {}): Promise<Doc[]> {
+    find (_class: Ref<Class>, query: {}): Promise<Doc[]> {
       return memdb.find(_class, query)
     },
 

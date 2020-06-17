@@ -2,21 +2,6 @@
 # yarn lockfile v1
 
 
-"@anticrm/platform-core-plugin@^0.1.0-dev.16":
-  version "0.1.0-dev.19"
-  resolved "https://registry.yarnpkg.com/@anticrm/platform-core-plugin/-/platform-core-plugin-0.1.0-dev.19.tgz#23c7f81a965fe07cded6b9660b16ca8de8e481bd"
-  integrity sha512-Fj4Sa02LuaXiCSqbLqDhpwnajvkIFGWfOtyh4GwmzXfQ4oxTqlysdgGwkTdv+BPoiyZvuoqYmSXInkeSgNirRg==
-
-"@anticrm/platform-core@^0.1.0-dev.16":
-  version "0.1.0-dev.18"
-  resolved "https://registry.yarnpkg.com/@anticrm/platform-core/-/platform-core-0.1.0-dev.18.tgz#3216cbbfa2943a5e2589f4e63abed4dab9711dc6"
-  integrity sha512-h29MJeN9sIwo/Hm/MVdSEsSrYr52ZcfXvb0A3MlYVmeKF1oDf7TuHQ1vNTSbSXZ/8ujmLv3mTQsph7y7NM77sQ==
-
-"@anticrm/platform@^0.1.0-dev.16":
-  version "0.1.0-dev.16"
-  resolved "https://registry.yarnpkg.com/@anticrm/platform/-/platform-0.1.0-dev.16.tgz#7df9405706aefbca0094d3d3190f0d69dffe8a28"
-  integrity sha512-zp4vMJEe/isz78eINlFPVOcitn2mPhNLWsKBAjyP19McQ6YwIvYOvK+9gsNKBgadQhv286Q5YQP2rOue4+xsZA==
-
 "@babel/code-frame@^7.0.0", "@babel/code-frame@^7.10.1":
   version "7.10.1"
   resolved "https://registry.yarnpkg.com/@babel/code-frame/-/code-frame-7.10.1.tgz#d5481c5095daa1c57e16e54c6f9198443afb49ff"
@@ -1214,9 +1199,9 @@ acorn-globals@^6.0.0:
     acorn-walk "^7.1.1"
 
 acorn-walk@^7.1.1:
-  version "7.1.1"
-  resolved "https://registry.yarnpkg.com/acorn-walk/-/acorn-walk-7.1.1.tgz#345f0dffad5c735e7373d2fec9a1023e6a44b83e"
-  integrity sha512-wdlPY2tm/9XBr7QkKlq0WQVgiuGTX6YWPyRyBviSoScBuLfTVQhvwg6wJ369GJ/1nPfTLMfnrFIfjqVg6d+jQQ==
+  version "7.2.0"
+  resolved "https://registry.yarnpkg.com/acorn-walk/-/acorn-walk-7.2.0.tgz#0de889a601203909b0fbe07b8938dc21d2e967bc"
+  integrity sha512-OPdCF6GsMIP+Az+aWfAAOEt2/+iVDKE7oy6lJ098aoe59oAmK76qV6Gw60SbZ8jHuG2wH058GF4pLFbYamYrVA==
 
 acorn@^7.1.1:
   version "7.3.1"
@@ -1849,9 +1834,9 @@ ecc-jsbn@~0.1.1:
     safer-buffer "^2.1.0"
 
 electron-to-chromium@^1.3.413:
-  version "1.3.474"
-  resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.3.474.tgz#161af012e11f96795eade84bf03b8ddc039621b9"
-  integrity sha512-fPkSgT9IBKmVJz02XioNsIpg0WYmkPrvU1lUJblMMJALxyE7/32NGvbJQKKxpNokozPvqfqkuUqVClYsvetcLw==
+  version "1.3.475"
+  resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.3.475.tgz#67688cc82c342f39594a412286e975eda45d8412"
+  integrity sha512-vcTeLpPm4+ccoYFXnepvkFt0KujdyrBU19KNEO40Pnkhta6mUi2K0Dn7NmpRcNz7BvysnSqeuIYScP003HWuYg==
 
 emoji-regex@^8.0.0:
   version "8.0.0"

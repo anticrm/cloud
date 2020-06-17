@@ -11,4 +11,7 @@ RUN yarn
 
 EXPOSE 8080
 
+ARG mongodbUri='mongodb://localhost:27017'
+ENV MONGODB_URI=$mongodbUri
+
 CMD ["node", "lib/index.js"]

@@ -13,8 +13,7 @@
 // limitations under the License.
 //
 
-import core from '@anticrm/platform-core'
-import { makeRequest, getResponse } from '@anticrm/platform'
+import { makeRequest, getResponse } from '../rpc'
 import { start, Client } from '../server'
 import WebSocket from 'ws'
 import { encode } from 'jwt-simple'
@@ -71,15 +70,16 @@ describe('server', () => {
         id: null,
         meth: 'find',
         params: [
-          core.class.Class,
+          'class:core.Class',
           {}
         ]
       }))
     })
     conn.on('message', (msg: string) => {
       const resp = getResponse(msg)
-      expect(resp.result.length).toBeGreaterThan(0)
       conn.close()
+      expect(resp.result instanceof Array).toBeTruthy()
+      console.log(resp.result)
       done()
     })
   })
@@ -96,8 +96,8 @@ describe('server', () => {
     })
     conn.on('message', (msg: string) => {
       const resp = getResponse(msg)
-      expect(resp.result.length).toBeGreaterThan(0)
       conn.close()
+      expect(resp.result instanceof Array).toBeTruthy()
       done()
     })
   })
