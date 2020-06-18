@@ -9,7 +9,7 @@ COPY packages/server ./
 
 RUN yarn
 
-EXPOSE 8080
+EXPOSE 18080
 
 ARG mongodbUri='mongodb://localhost:27017'
 ENV MONGODB_URI=$mongodbUri

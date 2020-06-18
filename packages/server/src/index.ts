@@ -18,4 +18,4 @@ import { start } from './server'
 const mongodbUri = process.env.MONGODB_URI || 'mongodb://localhost:27017'
 
 console.log('mongodb uri: ...' + mongodbUri.substring(25))
-start(8080, mongodbUri)
+start(18080, mongodbUri)
