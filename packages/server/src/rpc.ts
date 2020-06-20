@@ -13,36 +13,38 @@
 // limitations under the License.
 //
 
-export interface Request {
-  id: string | number | null
-  meth: string
-  params?: any[]
+export type ReqId = string | number
+
+export interface Request<P extends any[]> {
+  id?: ReqId
+  method: string
+  params: P
 }
 
 export interface RpcError {
   code: number
-  message: string
+  message?: string
   data?: any
 }
 
-export interface Response {
-  id: string | number | null
-  result?: any
+export interface Response<R> {
+  result?: R
+  id?: ReqId
   error?: RpcError
 }
 
-export function makeRequest (request: Request): string {
+export function makeRequest<R extends any[]> (request: Request<R>): string {
   return JSON.stringify(request)
 }
 
-export function getRequest (req: string): Request {
+export function getRequest<R extends any[]> (req: string): Request<R> {
   return JSON.parse(req as string)
 }
 
-export function makeResponse (response: Response): string {
+export function makeResponse<R> (response: Response<R>): string {
   return JSON.stringify(response)
 }
 
-export function getResponse (res: string): Response {
+export function getResponse<R> (res: string): Response<R> {
   return JSON.parse(res as string)
 }

@@ -18,14 +18,28 @@ import { MongoClient, Db } from 'mongodb'
 import { Ref, Class, Doc } from './types'
 import { MemDb } from './memdb'
 
+import WebSocket from 'ws'
+import { makeResponse, Response } from './rpc'
+import { PlatformServer } from './server'
+
+interface CommitInfo {
+  created: Doc[]
+}
+
 export interface ClientService {
   find (_class: Ref<Class>, query: {}): Promise<Doc[]>
+  commit (commitInfo: CommitInfo): Promise<CommitInfo>
   load (domain: string): Promise<Doc[]>
   ping (): Promise<void>
 }
 
-export async function connect (uri: string, dbName: string): Promise<ClientService & { shutdown: () => Promise<void> }> {
-  // console.log('connecting to ' + uri)
+export interface ClientControl {
+  send (response: Response<unknown>): void
+  shutdown (): Promise<void>
+}
+
+export async function connect (uri: string, dbName: string, ws: WebSocket, server: PlatformServer): Promise<ClientService & ClientControl> {
+  console.log('connecting to ' + uri.substring(25))
   console.log('use ' + dbName)
   const client = await MongoClient.connect(uri, { useUnifiedTopology: true })
   const db = client.db(dbName)
@@ -35,12 +49,22 @@ export async function connect (uri: string, dbName: string): Promise<ClientServi
     model.push(doc)
   })
   cursor.close()
+  console.log('model:')
+  console.log(model)
   const memdb = new MemDb()
   memdb.loadModel(model)
 
-  return {
+  const clientControl = {
     find (_class: Ref<Class>, query: {}): Promise<Doc[]> {
       return memdb.find(_class, query)
+    },
+
+    async commit (commitInfo: CommitInfo): Promise<CommitInfo> {
+      for (const doc of commitInfo.created) {
+        memdb.add(doc)
+      }
+      server.broadcast(clientControl, { result: commitInfo })
+      return commitInfo
     },
 
     async load (domain: string): Promise<Doc[]> {
@@ -49,8 +73,16 @@ export async function connect (uri: string, dbName: string): Promise<ClientServi
 
     async ping (): Promise<any> { return null },
 
+    // C O N T R O L
+
+    send<R> (response: Response<R>): void {
+      ws.send(makeResponse(response))
+    },
+
     shutdown (): Promise<void> {
       return client.close()
     }
   }
+
+  return clientControl
 }

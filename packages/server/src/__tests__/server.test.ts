@@ -48,7 +48,8 @@ describe('server', () => {
       for (let i = 0; i < total; i++) {
         conn.send(makeRequest({
           id: i,
-          meth: 'ping'
+          method: 'ping',
+          params: []
         }))
       }
     })
@@ -67,8 +68,7 @@ describe('server', () => {
     const conn = connect()
     conn.on('open', () => {
       conn.send(makeRequest({
-        id: null,
-        meth: 'find',
+        method: 'find',
         params: [
           'class:core.Class',
           {}
@@ -88,8 +88,7 @@ describe('server', () => {
     const conn = connect()
     conn.on('open', () => {
       conn.send(makeRequest({
-        id: null,
-        meth: 'load',
+        method: 'load',
         params: [
         ]
       }))
