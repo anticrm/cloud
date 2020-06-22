@@ -34,9 +34,10 @@ export interface PlatformServer {
   broadcast<R> (from: ClientControl, response: Response<R>): void
 }
 
-export function start (port: number, dbUri: string) {
+export function start (port: number, dbUri: string, host?: string) {
 
   console.log('starting server on port ' + port + '...')
+  console.log('host: ' + host)
 
   const server = createServer()
   const wss = new Server({ noServer: true })
@@ -109,7 +110,7 @@ export function start (port: number, dbUri: string) {
     })
   })
 
-  const httpServer = server.listen(port)
+  const httpServer = server.listen(port, host)
 
   console.log('server started.')
 
