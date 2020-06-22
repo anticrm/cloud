@@ -41,14 +41,22 @@ export function start (port: number, dbUri: string) {
   const server = createServer()
   const wss = new Server({ noServer: true })
 
-  const clients = new Map<string, Promise<ClientService>>()
+  // const clients = new Map<string, Promise<ClientService>>()
+
+  const connections = [] as Promise<ClientService>[]
 
   const platformServer: PlatformServer = {
     broadcast<R> (from: ClientControl, response: Response<R>) {
-      for (const client of clients.values()) {
+      for (const client of connections) {
+        console.log('broadcasting to ' + connections.length + ' connections')
         client.then(client => {
           if (client !== from) {
+            console.log('broadcasting to')
+            console.log(client)
+            console.log(response)
             client.send(response)
+          } else {
+            console.log('do not broadcast to self')
           }
         })
       }
@@ -59,21 +67,17 @@ export function start (port: number, dbUri: string) {
     const service = new Promise<ClientService>((resolve, reject) => {
       connect(uri, tenant, ws, platformServer).then(service => { resolve(service as unknown as ClientService) }).catch(err => reject(err))
     })
-    clients.set(tenant, service)
+    //clients.set(tenant, service)
     return service
   }
 
   wss.on('connection', function connection (ws: WebSocket, request: any, client: Client) {
+    const service = createClient(dbUri, client.tenant, ws)
+    connections.push(service)
+
     ws.on('message', async (msg: string) => {
       const request = getRequest(msg)
-      let service = clients.get(client.tenant)
-      if (!service) {
-        service = createClient(dbUri, client.tenant, ws)
-      }
-      const s = await service
-      console.log('call method `' + request.method + '` on:')
-      console.log(s)
-      const f = s[request.method]
+      const f = (await service)[request.method]
       const result = await f.apply(null, request.params ?? [])
       ws.send(makeResponse({
         id: request.id,
@@ -110,8 +114,8 @@ export function start (port: number, dbUri: string) {
   console.log('server started.')
 
   return async function shutdown () {
-    for (const client of clients) {
-      (await client[1]).shutdown()
+    for (const client of connections) {
+      (await client).shutdown()
     }
     httpServer.close()
   }
