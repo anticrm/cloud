@@ -20,6 +20,8 @@ import WebSocket, { Server } from 'ws'
 import { decode } from 'jwt-simple'
 import { connect, ClientControl } from './service'
 
+const ctlpassword = process.env.CTL_PASSWORD || '123pass'
+
 export interface Client {
   tenant: string
 }
@@ -32,6 +34,7 @@ type ClientService = Service & ClientControl
 
 export interface PlatformServer {
   broadcast<R> (from: ClientControl, response: Response<R>): void
+  shutdown (password: string): Promise<void>
 }
 
 export function start (port: number, dbUri: string, host?: string) {
@@ -61,6 +64,17 @@ export function start (port: number, dbUri: string, host?: string) {
           }
         })
       }
+    },
+
+    async shutdown (password: string) {
+      console.log('shutting down...')
+      if (password !== ctlpassword) {
+        throw new Error('ctl password does not match')
+      }
+      for (const client of connections) {
+        (await client).shutdown()
+      }
+      httpServer.close()
     }
   }
 
@@ -114,10 +128,5 @@ export function start (port: number, dbUri: string, host?: string) {
 
   console.log('server started.')
 
-  return async function shutdown () {
-    for (const client of connections) {
-      (await client).shutdown()
-    }
-    httpServer.close()
-  }
+  return () => { platformServer.shutdown(ctlpassword) }
 }

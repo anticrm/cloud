@@ -79,9 +79,15 @@ export async function connect (uri: string, dbName: string, ws: WebSocket, serve
       ws.send(makeResponse(response))
     },
 
+    // TODO rename to `close`
     shutdown (): Promise<void> {
       return client.close()
+    },
+
+    serverShutdown (password: string): Promise<void> {
+      return server.shutdown(password)
     }
+
   }
 
   return clientControl
