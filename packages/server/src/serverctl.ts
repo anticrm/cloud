@@ -29,7 +29,7 @@ function connect () {
   }
   const token = encode(client, 'secret')
   console.log(token)
-  return new WebSocket('wss://localhost:' + port + '/' + token)
+  return new WebSocket('ws://localhost:' + port + '/' + token)
 }
 
 const conn = connect()

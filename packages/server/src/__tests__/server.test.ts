@@ -29,7 +29,7 @@ describe('server', () => {
     }
     const token = encode(client, 'secret')
     console.log(token)
-    return new WebSocket('wss://localhost:3333/' + token)
+    return new WebSocket('ws://localhost:3333/' + token)
   }
 
   it('should connect to server', (done) => {
