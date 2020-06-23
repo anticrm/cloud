@@ -15,7 +15,7 @@
 #
 
 yarn
-yarn workbench @anticrm/server build &&
-yarn workbench @anticrm/server shutdown
-yarn workbench @anticrm/server start
+yarn workspace @anticrm/server build &&
+yarn workspace @anticrm/server shutdown
+yarn workspace @anticrm/server start
 

@@ -33,6 +33,12 @@ function connect () {
 }
 
 const conn = connect()
+
+conn.onerror = (event) => {
+  console.log('websocket error')
+  console.log(event)
+}
+
 conn.on('open', () => {
   conn.send(makeRequest({
     method: 'serverShutdown',
