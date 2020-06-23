@@ -5,7 +5,7 @@
     "build": "tsc",
     "test": "jest",
     "start": "node lib/index.js &",
-    "shutdown": "node lib/serverctl.js"
+    "shutdown": "nohup node lib/serverctl.js"
   },
   "author": "Anticrm Platform Contributors",
   "license": "EPL-2.0",
