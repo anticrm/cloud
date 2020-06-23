@@ -79,7 +79,7 @@ export function start (port: number, dbUri: string, host?: string) {
     ws.on('message', async (msg: string) => {
       const request = getRequest(msg)
       const f = (await service)[request.method]
-      const result = await f.apply(null, request.params ?? [])
+      const result = await f.apply(null, request.params || [])
       ws.send(makeResponse({
         id: request.id,
         result

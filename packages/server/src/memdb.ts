@@ -39,7 +39,7 @@ export class MemDb {
         this.index(doc)
       }
     }
-    return this.byClass.get(_class) ?? []
+    return this.byClass.get(_class) || []
   }
 
   set (doc: Doc) {
@@ -97,7 +97,7 @@ export class MemDb {
   }
 
   createDocument<M extends Doc> (_class: Ref<Class>, values: Omit<M, keyof Doc>, _id?: Ref<M>): M {
-    const layout = { _class, _id: _id ?? generateId() as Ref<Doc> } as Doc
+    const layout = { _class, _id: _id || generateId() as Ref<Doc> } as Doc
     this.assign(layout as unknown as Layout, _class, values as unknown as Layout)
     this.add(layout)
     return layout as M
