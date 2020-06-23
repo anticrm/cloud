@@ -22,7 +22,7 @@ ERROR=/tmp/server-error.log
 PORT=18080
 LISTEN_IP = '0.0.0.0'
 CMD='node'
-COMMAND='$CMD'
+COMMAND='$CMD ./packages/server/lib/index.js'
 
 USR=ubuntu
 
