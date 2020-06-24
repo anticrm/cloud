@@ -39,12 +39,7 @@ export async function connect (uri: string, dbName: string, ws: WebSocket, serve
   console.log('use ' + dbName)
   const client = await MongoClient.connect(uri, { useUnifiedTopology: true })
   const db = client.db(dbName)
-  const model: Doc[] = []
-  const cursor = db.collection('model').find({})
-  await cursor.forEach(doc => {
-    model.push(doc)
-  })
-  cursor.close()
+  const model: Layout<Doc>[] = await db.collection('model').find({}).toArray()
   console.log('model:')
   console.log(model)
   const memdb = new MemDb()
@@ -52,12 +47,12 @@ export async function connect (uri: string, dbName: string, ws: WebSocket, serve
 
   const clientControl = {
     find (_class: Ref<Class<Doc>>, query: AnyLayout): Promise<Layout<Doc>[]> {
-      return memdb.find(_class, query)
+      return db.collection('other').find({ ...query, _class }).toArray()
     },
 
     async commit (commitInfo: CommitInfo): Promise<void> {
       for (const doc of commitInfo.created) {
-        memdb.add(doc)
+        await db.collection('other').insertMany(commitInfo.created)
       }
       server.broadcast(clientControl, { result: commitInfo })
     },
