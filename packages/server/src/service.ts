@@ -15,30 +15,26 @@
 
 import { MongoClient, Db } from 'mongodb'
 
-import { Ref, Class, Doc } from './types'
-import { MemDb } from './memdb'
+import { Ref, Class, Doc } from '@anticrm/platform'
+import { MemDb, Layout, AnyLayout } from '@anticrm/memdb'
 
 import WebSocket from 'ws'
 import { makeResponse, Response } from './rpc'
 import { PlatformServer } from './server'
 
+import { CoreProtocol } from '@anticrm/rpc'
+
 interface CommitInfo {
   created: Doc[]
 }
 
-export interface ClientService {
-  find (_class: Ref<Class>, query: {}): Promise<Doc[]>
-  commit (commitInfo: CommitInfo): Promise<CommitInfo>
-  load (domain: string): Promise<Doc[]>
-  ping (): Promise<void>
-}
-
 export interface ClientControl {
+  ping (): Promise<void>
   send (response: Response<unknown>): void
   shutdown (): Promise<void>
 }
 
-export async function connect (uri: string, dbName: string, ws: WebSocket, server: PlatformServer): Promise<ClientService & ClientControl> {
+export async function connect (uri: string, dbName: string, ws: WebSocket, server: PlatformServer): Promise<CoreProtocol & ClientControl> {
   console.log('connecting to ' + uri.substring(25))
   console.log('use ' + dbName)
   const client = await MongoClient.connect(uri, { useUnifiedTopology: true })
@@ -55,19 +51,18 @@ export async function connect (uri: string, dbName: string, ws: WebSocket, serve
   memdb.loadModel(model)
 
   const clientControl = {
-    find (_class: Ref<Class>, query: {}): Promise<Doc[]> {
+    find (_class: Ref<Class<Doc>>, query: AnyLayout): Promise<Layout<Doc>[]> {
       return memdb.find(_class, query)
     },
 
-    async commit (commitInfo: CommitInfo): Promise<CommitInfo> {
+    async commit (commitInfo: CommitInfo): Promise<void> {
       for (const doc of commitInfo.created) {
         memdb.add(doc)
       }
       server.broadcast(clientControl, { result: commitInfo })
-      return commitInfo
     },
 
-    async load (domain: string): Promise<Doc[]> {
+    async load (): Promise<Layout<Doc>[]> {
       return memdb.dump()
     },
 
