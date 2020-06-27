@@ -47,13 +47,28 @@ export async function connect (uri: string, dbName: string, ws: WebSocket, serve
 
   const clientControl = {
     find (_class: Ref<Class<Doc>>, query: AnyLayout): Promise<Layout<Doc>[]> {
-      return db.collection('other').find({ ...query, _class }).toArray()
+      const domain = memdb.getDomain(_class)
+      return db.collection(domain).find({ ...query, _class }).toArray()
+    },
+
+    delete (_class: Ref<Class<Doc>>, query: AnyLayout): Promise<void> {
+      console.log('DELETE', _class, query)
+      const domain = memdb.getDomain(_class)
+      return db.collection(domain).deleteMany({ ...query }).then(result => { })
     },
 
     async commit (commitInfo: CommitInfo): Promise<void> {
-      for (const doc of commitInfo.created) {
-        await db.collection('other').insertMany(commitInfo.created)
-      }
+      // group by domain
+      const byDomain = commitInfo.created.reduce((group: Map<string, Doc[]>, doc) => {
+        const domain = memdb.getDomain(doc._class)
+        let g = group.get(domain)
+        if (!g) { group.set(domain, g = []) }
+        g.push(doc)
+        return group
+      }, new Map())
+
+      await Promise.all(Array.from(byDomain.entries()).map(domain => db.collection(domain[0]).insertMany(domain[1])))
+
       server.broadcast(clientControl, { result: commitInfo })
     },
 

@@ -2,24 +2,24 @@
 # yarn lockfile v1
 
 
-"@anticrm/memdb@^0.1.1":
-  version "0.1.1"
-  resolved "https://registry.yarnpkg.com/@anticrm/memdb/-/memdb-0.1.1.tgz#fe45924c401963108108725de5626ae492d66d3f"
-  integrity sha512-D3hA9sNBPqyzFK+BYvcfyCb9XqiZRiqRR6VcYojc7CIGQ1PAXRzqqdwuhp1Ws2hJcaVeVnsvnilz06ieSp8mUA==
+"@anticrm/memdb@^0.1.4":
+  version "0.1.4"
+  resolved "https://registry.yarnpkg.com/@anticrm/memdb/-/memdb-0.1.4.tgz#795612b182d243901445ea01f1936b9b955a7da4"
+  integrity sha512-ZRgUD9s1oJSx2D4yvI2M3Omj3I3A7ArdQN7u0/MTIIs2qYClQM5SI1lzajd2hmzOAiR0ujf5+MFEZwRWyJbg4Q==
   dependencies:
-    "@anticrm/platform" "^0.1.5"
+    "@anticrm/platform" "^0.1.6"
 
-"@anticrm/platform@^0.1.5":
-  version "0.1.5"
-  resolved "https://registry.yarnpkg.com/@anticrm/platform/-/platform-0.1.5.tgz#6a0ae33d0df6d5565e238f98ca0be23d3a2effb4"
-  integrity sha512-kh4Qv9n7hY0PdT8yt+U58aPRtd4Ay88zrapZDxsOP96nqtrAbcJk5nH0ZerS+vQwbbvAJLQt+rVKi+i1lCU9RQ==
+"@anticrm/platform@^0.1.6":
+  version "0.1.6"
+  resolved "https://registry.yarnpkg.com/@anticrm/platform/-/platform-0.1.6.tgz#e10fcd6dc6b136301a8c9fc68db49f1fd9f01d7d"
+  integrity sha512-LMIRGXt577b3tN1TOJYrWipKN7LwrM7JTTf2K3zEiiuE8f60HXjqcB3eIfW+IIJLK7d9WsD0ANjrMbRouEOv+A==
 
-"@anticrm/rpc@^0.1.1":
-  version "0.1.1"
-  resolved "https://registry.yarnpkg.com/@anticrm/rpc/-/rpc-0.1.1.tgz#601bc5ccf5777d7e97aeaff07fede9bcf1475e0f"
-  integrity sha512-qkRPTEOxBdgKsRJX7O50bo2FR/F5uiufGMRxlw/UdcecvLg9MEP4mWB1uXETIxQDKKH5UTJekv3jZxQ5B083kA==
+"@anticrm/rpc@^0.1.4":
+  version "0.1.4"
+  resolved "https://registry.yarnpkg.com/@anticrm/rpc/-/rpc-0.1.4.tgz#578704025f4c4cec1d4e698148c5358f3ae17198"
+  integrity sha512-0iMvJijckkR2Ren2TPWoWye8JfCYNUaVc0IQWiS6prXlbiim7BQRuxZqzgSnbEJ4UwDJ9M0tsn14qm4Q50RsNw==
   dependencies:
-    "@anticrm/memdb" "^0.1.1"
+    "@anticrm/memdb" "^0.1.4"
 
 "@babel/code-frame@^7.0.0", "@babel/code-frame@^7.10.1":
   version "7.10.1"
