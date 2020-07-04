@@ -8,10 +8,5 @@
     "esModuleInterop": true,
     "composite": true,
     "declaration": true
-  },
-  "references": [
-    {
-      "path": "../accounts"
-    }
-  ]
+  }
 }

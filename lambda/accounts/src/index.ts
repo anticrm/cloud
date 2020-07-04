@@ -13,28 +13,33 @@
 // limitations under the License.
 //
 
-import methods from '@anticrm/accounts'
-import { makeErrorResponse } from '@anticrm/rpc'
 import { MongoClient } from 'mongodb'
+import { APIGatewayProxyEvent, APIGatewayProxyResult, APIGatewayProxyHandler, Context } from "aws-lambda"
+import { getRequest, makeErrorResponse } from '@anticrm/rpc'
 
-
-import Koa from 'koa'
-import Router from 'koa-router'
-
-import bodyParser from 'koa-bodyparser'
+import methods from '@anticrm/accounts'
 
 const dbUri = process.env.MONGODB_URI || 'mongodb://localhost:27017'
 let client: MongoClient
 
-const app = new Koa()
-const router = new Router()
+export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent, context: Context): Promise<APIGatewayProxyResult> => {
+  context.callbackWaitsForEmptyEventLoop = false
 
-router.post('rpc', '/rpc', async (ctx, next) => {
-  const request = ctx.request.body
+  if (!event.body) {
+    return {
+      statusCode: 400,
+      body: "Bad request, expecting RPC method call in POST body."
+    }
+  }
 
-  const method = methods[request]
+  const request = getRequest(event.body)
+  const method = methods[request.method]
+
   if (!request.method) {
-    ctx.body = makeErrorResponse(0, request.id, 'unknown method')
+    return {
+      statusCode: 200,
+      body: makeErrorResponse(0, request.id, 'unknown method')
+    }
   }
 
   if (!client) {
@@ -43,14 +48,8 @@ router.post('rpc', '/rpc', async (ctx, next) => {
   const db = client.db('accounts')
 
   const result = await method(db, request)
-  ctx.body = result
-})
-
-app.use(bodyParser())
-app.use(router.routes()).use(router.allowedMethods())
-
-app.listen(3000, () => {
-  console.log('server started')
-})
-
-
+  return {
+    statusCode: 200,
+    body: result
+  }
+}

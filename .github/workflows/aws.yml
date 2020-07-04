@@ -1,0 +1,37 @@
+name: Deploy to Amazon Labda
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - uses: actions/setup-node@v1
+      with:
+        node-version: 14
+        registry-url: 'https://registry.npmjs.org'
+    
+    - name: Launch MongoDB
+      uses: wbari/start-mongoDB@v0.2
+      with:
+        mongoDBVersion: 4.2
+
+    - name: Test Websocket server
+      run: |
+        yarn install
+        yarn workspace @anticrm/server build
+        yarn workspace @anticrm/server test
+
+    - name: Test Accounts lambda
+      run: |
+        cd lambda/accounts
+        yarn install
+        yarn build
+        yarn test
+        rm -rf node_modules
+        yarn install --production
+        cd lib
+        zip ../accounts.zip index.js
+        cd ..
+        zip -r accounts.zip node_modules/

@@ -24,7 +24,7 @@
     "jwt-simple": "^0.5.6",
     "mongodb": "^3.5.9",
     "ws": "^7.3.0",
-    "@anticrm/rpc": "^0.1.4",
+    "@anticrm/rpc": "^0.1.6",
     "@anticrm/memdb": "^0.1.4",
     "@anticrm/platform": "^0.1.6"
   }
