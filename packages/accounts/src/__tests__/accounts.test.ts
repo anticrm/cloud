@@ -22,63 +22,87 @@ describe('server', () => {
   const dbUri = process.env.MONGODB_URI || 'mongodb://localhost:27017'
   let conn: MongoClient
   let db: Db
+  let workspace: string
 
   beforeAll(async () => {
     conn = await MongoClient.connect(dbUri)
     const olddb = conn.db('accounts')
     await olddb.dropDatabase()
     db = conn.db('accounts')
-    await db.collection('account').createIndex({ email: 1 }, { unique: true })
+    await db.collection('account').createIndex({ email: 1, workspace: 1 }, { unique: true })
+    await db.collection('workspace').createIndex({ workspace: 1 }, { unique: true })
+  })
+
+  it('should create workspace', async () => {
+    const request: Request<[string, string, string]> = {
+      method: 'createWorkspace',
+      params: ['andrey', '123', 'ООО Рога и Копыта']
+    }
+
+    const result = await methods.createWorkspace(db, request)
+    expect(result.result).toBeDefined()
+    workspace = result.result
+    console.log('workspace: ' + workspace)
   })
 
   it('should create account', async () => {
     const request: Request<[string, string, string]> = {
       method: 'createAccount',
-      params: ['andrey', '123', 'latest-model']
+      params: ['andrey', '123', workspace]
     }
 
     const result = await methods.createAccount(db, request)
-    expect(result).toBe('{"result":"OK"}')
+    expect(result.result).toBe(true)
   })
 
   it('should not create, duplicate account', async () => {
     const request: Request<[string, string, string]> = {
       method: 'createAccount',
-      params: ['andrey', '123', 'latest-model']
+      params: ['andrey', '123', workspace]
     }
 
     const result = await methods.createAccount(db, request)
-    expect(result).toBe('{"error":{"code":0,"message":"MongoError: E11000 duplicate key error collection: accounts.account index: email_1 dup key: { email: \\"andrey\\" }"}}')
+    expect(result.error).toBeDefined()
+  })
+
+  it('should not create, workspace not exists', async () => {
+    const request: Request<[string, string, string]> = {
+      method: 'createAccount',
+      params: ['andrey', '123', 'non-existent-workspace']
+    }
+
+    const result = await methods.createAccount(db, request)
+    expect(result.error).toBeDefined()
   })
 
   it('should login', async () => {
-    const request: Request<[string, string]> = {
+    const request: Request<[string, string, string]> = {
       method: 'login',
-      params: ['andrey', '123']
+      params: ['andrey', '123', workspace]
     }
 
     const result = await methods.login(db, request)
-    expect(result).toBe('{"result":[{"account":"latest-model","server":"3.12.129.141","token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImFuZHJleSIsImFjY291bnQiOiJsYXRlc3QtbW9kZWwifQ.z9sIz9Rgm04FlojiQLuNOs9VAnMkmVdJJdfWK5-dXE8"}]}')
+    expect(result.result).toBeDefined()
   })
 
   it('should not login, wrong password', async () => {
-    const request: Request<[string, string]> = {
+    const request: Request<[string, string, string]> = {
       method: 'login',
-      params: ['andrey', '123555']
+      params: ['andrey', '123555', workspace]
     }
 
     const result = await methods.login(db, request)
-    expect(result).toBe('{"error":{"code":0,"message":"Account not found or incorrect password"}}')
+    expect(result.error).toBeDefined()
   })
 
   it('should not login, unknown user', async () => {
-    const request: Request<[string, string]> = {
+    const request: Request<[string, string, string]> = {
       method: 'login',
-      params: ['andrey1', '123555']
+      params: ['andrey1', '123555', 'workspace']
     }
 
     const result = await methods.login(db, request)
-    expect(result).toBe('{"error":{"code":0,"message":"Account not found or incorrect password"}}')
+    expect(result.error).toBeDefined()
   })
 
   afterAll(async () => {

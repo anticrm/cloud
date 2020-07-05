@@ -22,6 +22,7 @@ import Koa from 'koa'
 import Router from 'koa-router'
 
 import bodyParser from 'koa-bodyparser'
+import cors from '@koa/cors'
 
 const dbUri = process.env.MONGODB_URI || 'mongodb://localhost:27017'
 let client: MongoClient
@@ -31,8 +32,8 @@ const router = new Router()
 
 router.post('rpc', '/rpc', async (ctx, next) => {
   const request = ctx.request.body
-
-  const method = methods[request]
+  console.log(request)
+  const method = methods[request.method]
   if (!request.method) {
     ctx.body = makeErrorResponse(0, request.id, 'unknown method')
   }
@@ -43,9 +44,11 @@ router.post('rpc', '/rpc', async (ctx, next) => {
   const db = client.db('accounts')
 
   const result = await method(db, request)
+  console.log(result)
   ctx.body = result
 })
 
+app.use(cors())
 app.use(bodyParser())
 app.use(router.routes()).use(router.allowedMethods())
 

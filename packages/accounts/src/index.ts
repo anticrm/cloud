@@ -14,20 +14,30 @@
 //
 
 import { Binary, Db } from 'mongodb'
-import { makeErrorResponse, makeDataResponse, Request } from '@anticrm/rpc'
+import { Request, Response } from '@anticrm/rpc'
 import { randomBytes, pbkdf2Sync } from 'crypto'
 import { Buffer } from 'buffer'
 import { encode } from 'jwt-simple'
 
 const server = '3.12.129.141'
+const port = '18080'
 const secret = 'secret'
+
+const WORKSPACE_COLLECTION = 'workspace'
+const ACCOUNT_COLLECTION = 'account'
 
 interface Account {
   email: string
+  workspace: string
   hash: Binary
   salt: Binary
-  accounts: string[]
-  disabled?: boolean
+}
+
+interface LoginInfo {
+  workspace: string
+  server: string
+  port: string
+  token: string
 }
 
 function hashWithSalt (password: string, salt: Buffer): Buffer {
@@ -38,46 +48,84 @@ function verifyPassword (password: string, hash: Buffer, salt: Buffer): boolean 
   return Buffer.compare(hash, hashWithSalt(password, salt)) === 0
 }
 
-async function login (db: Db, request: Request<[string, string]>): Promise<string> {
-  const [email, password] = request.params
+async function login (db: Db, request: Request<[string, string, string]>): Promise<Response<LoginInfo>> {
+  const [email, password, workspace] = request.params
 
-  const account = await db.collection('account').findOne<Account>({ email })
-  if (!account || !verifyPassword(password, account.hash.buffer, account.salt.buffer)) {
-    return makeErrorResponse(0, request.id, 'Account not found or incorrect password')
+  const ws = await db.collection(WORKSPACE_COLLECTION).findOne({ workspace })
+  if (!ws) {
+    return {
+      id: request.id, error: { code: 0, message: 'workspace not found' }
+    }
   }
 
-  const result = account.accounts.map(account => ({
-    account,
-    server,
-    token: encode({ email, account }, secret)
-  }))
+  const account = await db.collection(ACCOUNT_COLLECTION).findOne<Account>({ email, workspace: ws._id })
+  if (!account || !verifyPassword(password, account.hash.buffer, account.salt.buffer)) {
+    return { id: request.id, error: { code: 0, message: 'Account not found or incorrect password' } }
+  }
 
-  return makeDataResponse(result, request.id)
+  const result = {
+    workspace,
+    server,
+    port,
+    token: encode({ email, workspace }, secret)
+  }
+
+  return { result, id: request.id }
 }
 
-async function createAccount (db: Db, request: Request<[string, string, string]>): Promise<string> {
-  const [email, password, account] = request.params
+async function createAccount (db: Db, request: Request<[string, string, string]>): Promise<Response<boolean>> {
+  const [email, password, workspace] = request.params
+
+  const ws = await db.collection(WORKSPACE_COLLECTION).findOne({ workspace })
+  if (!ws) {
+    return {
+      id: request.id, error: { code: 0, message: 'workspace not found' }
+    }
+  }
 
   const salt = randomBytes(32)
   const hash = hashWithSalt(password, salt)
 
   try {
-    await db.collection('account').insertOne({
+    await db.collection(ACCOUNT_COLLECTION).insertOne({
       email,
+      workspace: ws._id,
       hash,
       salt,
-      accounts: [account]
     })
+    return { result: true, id: request.id }
 
-    return makeDataResponse('OK', request.id)
   } catch (err) {
-    return makeErrorResponse(0, request.id, err.toString())
+    return {
+      id: request.id, error: { code: 0, message: err.toString() }
+    }
   }
 }
 
-const methods: { [key: string]: (db: Db, request: Request<any>) => Promise<string> } = {
+async function createWorkspace (db: Db, request: Request<[string, string, string]>): Promise<Response<string>> {
+  const [email, password, organisation] = request.params
+
+  const workspace = 'ws-' + randomBytes(8).toString('hex')
+
+  try {
+    await db.collection('workspace').insertOne({
+      workspace,
+      organisation
+    })
+
+    return { result: workspace, id: request.id }
+
+  } catch (err) {
+    return {
+      id: request.id, error: { code: 0, message: err.toString() }
+    }
+  }
+}
+
+const methods: { [key: string]: (db: Db, request: Request<any>) => Promise<Response<any>> } = {
   login,
-  createAccount
+  createAccount,
+  createWorkspace
 }
 
 export default methods
