@@ -14,8 +14,8 @@
 //
 
 import methods from '@anticrm/accounts'
-import { makeErrorResponse } from '@anticrm/rpc'
-import { MongoClient } from 'mongodb'
+import { makeErrorResponse, Response, Request } from '@anticrm/rpc'
+import { MongoClient, Db } from 'mongodb'
 
 
 import Koa from 'koa'
@@ -33,7 +33,7 @@ const router = new Router()
 router.post('rpc', '/rpc', async (ctx, next) => {
   const request = ctx.request.body
   console.log(request)
-  const method = methods[request.method]
+  const method = (methods as { [key: string]: (db: Db, request: Request<any>) => Response<any> })[request.method]
   if (!request.method) {
     ctx.body = makeErrorResponse(0, request.id, 'unknown method')
   }

@@ -29,7 +29,7 @@ describe('server', () => {
     const olddb = conn.db('accounts')
     await olddb.dropDatabase()
     db = conn.db('accounts')
-    await db.collection('account').createIndex({ email: 1, workspace: 1 }, { unique: true })
+    await db.collection('account').createIndex({ email: 1 }, { unique: true })
     await db.collection('workspace').createIndex({ workspace: 1 }, { unique: true })
   })
 
@@ -41,34 +41,23 @@ describe('server', () => {
 
     const result = await methods.createWorkspace(db, request)
     expect(result.result).toBeDefined()
-    workspace = result.result
-    console.log('workspace: ' + workspace)
+    workspace = result.result as string
   })
 
   it('should create account', async () => {
-    const request: Request<[string, string, string]> = {
+    const request: Request<[string, string]> = {
       method: 'createAccount',
-      params: ['andrey', '123', workspace]
+      params: ['andrey2', '123']
     }
 
     const result = await methods.createAccount(db, request)
-    expect(result.result).toBe(true)
+    expect(result.result).toBeDefined()
   })
 
   it('should not create, duplicate account', async () => {
-    const request: Request<[string, string, string]> = {
+    const request: Request<[string, string]> = {
       method: 'createAccount',
-      params: ['andrey', '123', workspace]
-    }
-
-    const result = await methods.createAccount(db, request)
-    expect(result.error).toBeDefined()
-  })
-
-  it('should not create, workspace not exists', async () => {
-    const request: Request<[string, string, string]> = {
-      method: 'createAccount',
-      params: ['andrey', '123', 'non-existent-workspace']
+      params: ['andrey', '123']
     }
 
     const result = await methods.createAccount(db, request)
@@ -98,7 +87,17 @@ describe('server', () => {
   it('should not login, unknown user', async () => {
     const request: Request<[string, string, string]> = {
       method: 'login',
-      params: ['andrey1', '123555', 'workspace']
+      params: ['andrey1', '123555', workspace]
+    }
+
+    const result = await methods.login(db, request)
+    expect(result.error).toBeDefined()
+  })
+
+  it('should not login, wrong workspace', async () => {
+    const request: Request<[string, string, string]> = {
+      method: 'login',
+      params: ['andrey', '123', 'non-existent-workspace']
     }
 
     const result = await methods.login(db, request)

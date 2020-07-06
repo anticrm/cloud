@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-import { Binary, Db } from 'mongodb'
+import { Binary, Db, ObjectID } from 'mongodb'
 import { Request, Response } from '@anticrm/rpc'
 import { randomBytes, pbkdf2Sync } from 'crypto'
 import { Buffer } from 'buffer'
@@ -26,11 +26,27 @@ const secret = 'secret'
 const WORKSPACE_COLLECTION = 'workspace'
 const ACCOUNT_COLLECTION = 'account'
 
+enum Error {
+  ACCOUNT_NOT_FOUND = 1,
+  INCORRECT_PASSWORD = 2,
+  FORBIDDEN = 3
+}
+
 interface Account {
+  _id: ObjectID
   email: string
-  workspace: string
   hash: Binary
   salt: Binary
+  workspaces: ObjectID[]
+}
+
+type AccountInfo = Omit<Account, 'hash' | 'salt'>
+
+interface Workspace {
+  _id: ObjectID
+  workspace: string
+  organisation: string
+  accounts: ObjectID[]
 }
 
 interface LoginInfo {
@@ -48,52 +64,77 @@ function verifyPassword (password: string, hash: Buffer, salt: Buffer): boolean 
   return Buffer.compare(hash, hashWithSalt(password, salt)) === 0
 }
 
+function toAccountInfo (account: Account): AccountInfo {
+  const result = { ...account }
+  delete result.hash
+  delete result.salt
+  return result
+}
+
+async function getAccountInfo (db: Db, request: Request<[string, string]>): Promise<Response<AccountInfo>> {
+  const [email, password] = request.params
+
+  const account = await db.collection(ACCOUNT_COLLECTION).findOne<Account>({ email })
+  if (!account) {
+    return { id: request.id, error: { code: Error.ACCOUNT_NOT_FOUND, message: 'Account not found.' } }
+  }
+
+  if (!verifyPassword(password, account.hash.buffer, account.salt.buffer)) {
+    return { id: request.id, error: { code: Error.INCORRECT_PASSWORD, message: 'Incorrect password.' } }
+  }
+
+  return { result: toAccountInfo(account), id: request.id }
+}
+
 async function login (db: Db, request: Request<[string, string, string]>): Promise<Response<LoginInfo>> {
   const [email, password, workspace] = request.params
 
-  const ws = await db.collection(WORKSPACE_COLLECTION).findOne({ workspace })
-  if (!ws) {
-    return {
-      id: request.id, error: { code: 0, message: 'workspace not found' }
+  const response = await getAccountInfo(db, { method: 'getAccountInfo', params: [email, password] })
+  if (response.error) {
+    return response as unknown as Response<LoginInfo>
+  }
+
+  const workspaceInfo = await db.collection(WORKSPACE_COLLECTION).findOne({
+    workspace
+  })
+
+  if (workspaceInfo) {
+
+    const workspaces = (response.result as AccountInfo).workspaces
+
+    for (const w of workspaces) {
+      if (w.equals(workspaceInfo._id)) {
+        const result = {
+          workspace,
+          server,
+          port,
+          token: encode({ email, workspace }, secret)
+        }
+        return { result, id: request.id }
+      }
     }
   }
 
-  const account = await db.collection(ACCOUNT_COLLECTION).findOne<Account>({ email, workspace: ws._id })
-  if (!account || !verifyPassword(password, account.hash.buffer, account.salt.buffer)) {
-    return { id: request.id, error: { code: 0, message: 'Account not found or incorrect password' } }
+  return {
+    id: request.id, error: { code: Error.FORBIDDEN, message: 'Forbidden.' }
   }
 
-  const result = {
-    workspace,
-    server,
-    port,
-    token: encode({ email, workspace }, secret)
-  }
-
-  return { result, id: request.id }
 }
 
-async function createAccount (db: Db, request: Request<[string, string, string]>): Promise<Response<boolean>> {
-  const [email, password, workspace] = request.params
-
-  const ws = await db.collection(WORKSPACE_COLLECTION).findOne({ workspace })
-  if (!ws) {
-    return {
-      id: request.id, error: { code: 0, message: 'workspace not found' }
-    }
-  }
+async function createAccount (db: Db, request: Request<[string, string]>): Promise<Response<ObjectID>> {
+  const [email, password] = request.params
 
   const salt = randomBytes(32)
   const hash = hashWithSalt(password, salt)
 
   try {
-    await db.collection(ACCOUNT_COLLECTION).insertOne({
+    const insert = await db.collection(ACCOUNT_COLLECTION).insertOne({
       email,
-      workspace: ws._id,
       hash,
       salt,
+      workspaces: [],
     })
-    return { result: true, id: request.id }
+    return { result: insert.insertedId, id: request.id }
 
   } catch (err) {
     return {
@@ -105,12 +146,36 @@ async function createAccount (db: Db, request: Request<[string, string, string]>
 async function createWorkspace (db: Db, request: Request<[string, string, string]>): Promise<Response<string>> {
   const [email, password, organisation] = request.params
 
+  let accountId
+  const response = await getAccountInfo(db, { method: 'getAccountInfo', params: [email, password] })
+  if (response.error) {
+    switch (response.error.code) {
+      case Error.ACCOUNT_NOT_FOUND: {
+        const response = await createAccount(db, { method: 'createAccount', params: [email, password] })
+        if (response.error) {
+          return response as unknown as Response<string>
+        }
+        accountId = (response.result as ObjectID)
+        break
+      }
+      default:
+        return response as unknown as Response<string>
+    }
+  } else {
+    accountId = (response.result as AccountInfo)._id
+  }
+
   const workspace = 'ws-' + randomBytes(8).toString('hex')
 
   try {
-    await db.collection('workspace').insertOne({
+    const insert = await db.collection(WORKSPACE_COLLECTION).insertOne({
       workspace,
-      organisation
+      organisation,
+      accounts: [accountId]
+    })
+
+    await db.collection(ACCOUNT_COLLECTION).updateOne({ _id: accountId }, {
+      $push: { workspaces: insert.insertedId }
     })
 
     return { result: workspace, id: request.id }
@@ -122,8 +187,9 @@ async function createWorkspace (db: Db, request: Request<[string, string, string
   }
 }
 
-const methods: { [key: string]: (db: Db, request: Request<any>) => Promise<Response<any>> } = {
+const methods = {
   login,
+  getAccountInfo,
   createAccount,
   createWorkspace
 }
