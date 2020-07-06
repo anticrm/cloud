@@ -50,6 +50,7 @@ interface Workspace {
 }
 
 interface LoginInfo {
+  email: string
   workspace: string
   server: string
   port: string
